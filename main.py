@@ -173,16 +173,20 @@ async def mention_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def reply_anything(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return
 
-def schedule_broadcasts(app):
+def schedule_broadcasts():
     scheduler = BackgroundScheduler(timezone=IST)
     now = datetime.now(IST)
-    scheduler.add_job(lambda: asyncio.run(send_broadcast(app, "✅ Bot is running!")),
+    scheduler.add_job(lambda: asyncio.run(send_broadcast("✅ Bot is running!")),
                       CronTrigger(minute=(now.minute + 1) % 60, hour=now.hour))
-    scheduler.add_job(lambda: asyncio.run(send_broadcast(app, "🌙 Good night from your bot!")),
+    scheduler.add_job(lambda: asyncio.run(send_broadcast("🌙 Good night from your bot!")),
                       CronTrigger(hour=22, minute=0))
     scheduler.start()
 
-async def send_broadcast(app, message_text):
+
+
+async def send_broadcast(message_text):
+    from telegram.ext import Application
+    app = Application.builder().token(BOT_TOKEN).build()
     if os.path.exists(CHAT_LOG):
         with open(CHAT_LOG) as f:
             for line in f:
